@@ -17,9 +17,9 @@ class ResourceViewer extends StatelessWidget {
   final ResourceItem resource;
 
   const ResourceViewer({
-    Key? key,
+    super.key,
     required this.resource,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class ResourceViewer extends StatelessWidget {
 class VideoViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const VideoViewer({Key? key, required this.resource}) : super(key: key);
+  const VideoViewer({super.key, required this.resource});
 
   @override
   State<VideoViewer> createState() => _VideoViewerState();
@@ -180,7 +180,7 @@ class _VideoViewerState extends State<VideoViewer> {
 class PdfViewer extends StatelessWidget {
   final ResourceItem resource;
 
-  const PdfViewer({Key? key, required this.resource}) : super(key: key);
+  const PdfViewer({super.key, required this.resource});
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +203,7 @@ class PdfViewer extends StatelessWidget {
 class MarkdownViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const MarkdownViewer({Key? key, required this.resource}) : super(key: key);
+  const MarkdownViewer({super.key, required this.resource});
 
   @override
   State<MarkdownViewer> createState() => _MarkdownViewerState();
@@ -285,7 +285,7 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
 class MhtmlViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const MhtmlViewer({Key? key, required this.resource}) : super(key: key);
+  const MhtmlViewer({super.key, required this.resource});
 
   @override
   State<MhtmlViewer> createState() => _MhtmlViewerState();

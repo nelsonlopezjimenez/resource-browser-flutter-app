@@ -14,7 +14,7 @@ void main() {
 /// This is the root widget of the application. It sets up the overall theme
 /// and navigation structure. In this simple app, we just have one screen.
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

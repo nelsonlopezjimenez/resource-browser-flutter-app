@@ -16,16 +16,16 @@ class ResourceList extends StatelessWidget {
 
   /// Constructor
   const ResourceList({
-    Key? key,
+    super.key,
     required this.resources,
     required this.onResourceSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     // If there are no resources, show a helpful message
     if (resources.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -49,10 +49,10 @@ class ResourceList extends StatelessWidget {
     // Display resources in a responsive grid
     return GridView.builder(
       // Padding around the entire grid
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       
       // GridView configuration
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         // Number of columns (2 on most screens)
         crossAxisCount: 2,
         
@@ -90,10 +90,10 @@ class _ResourceCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _ResourceCard({
-    Key? key,
+    super.key,
     required this.resource,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<_ResourceCard> createState() => _ResourceCardState();
@@ -151,7 +151,7 @@ class _ResourceCardState extends State<_ResourceCard> {
           onTap: widget.onTap,
           
           child: Padding(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -163,13 +163,13 @@ class _ResourceCardState extends State<_ResourceCard> {
                   color: _getTypeColor(),
                 ),
                 
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 
                 // File name (truncated if too long)
                 Flexible(
                   child: Text(
                     widget.resource.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -179,11 +179,11 @@ class _ResourceCardState extends State<_ResourceCard> {
                   ),
                 ),
                 
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 
                 // File type badge
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: _getTypeColor().withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
