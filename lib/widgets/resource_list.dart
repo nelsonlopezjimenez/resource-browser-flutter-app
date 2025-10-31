@@ -25,7 +25,7 @@ class ResourceList extends StatelessWidget {
   Widget build(BuildContext context) {
     // If there are no resources, show a helpful message
     if (resources.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -49,10 +49,10 @@ class ResourceList extends StatelessWidget {
     // Display resources in a responsive grid
     return GridView.builder(
       // Padding around the entire grid
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       
       // GridView configuration
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         // Number of columns (2 on most screens)
         crossAxisCount: 2,
         
@@ -60,8 +60,8 @@ class ResourceList extends StatelessWidget {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         
-        // Aspect ratio of each card (width / height)
-        childAspectRatio: 1.5,
+        // Aspect ratio of each card (width / height) - increased for more vertical space
+        childAspectRatio: 1.2,
       ),
       
       // Number of items in the grid
@@ -151,36 +151,39 @@ class _ResourceCardState extends State<_ResourceCard> {
           onTap: widget.onTap,
           
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(8),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // File type icon
                 Icon(
                   _getTypeIcon(),
-                  size: 48,
+                  size: 36,
                   color: _getTypeColor(),
                 ),
                 
-                const SizedBox(height: 12),
+                SizedBox(height: 8),
                 
                 // File name (truncated if too long)
-                Text(
-                  widget.resource.name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Text(
+                    widget.resource.name,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 
                 // File type badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: _getTypeColor().withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -188,7 +191,7 @@ class _ResourceCardState extends State<_ResourceCard> {
                   child: Text(
                     widget.resource.type.toUpperCase(),
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9,
                       color: _getTypeColor(),
                       fontWeight: FontWeight.bold,
                     ),
