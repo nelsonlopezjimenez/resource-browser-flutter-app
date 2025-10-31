@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:http/http.dart' as http;
+import 'dart:html' as html;
+import 'dart:ui_web' as ui_web;
 import '../models/resource_item.dart';
 
 /// ResourceViewer Widget
@@ -17,9 +18,9 @@ class ResourceViewer extends StatelessWidget {
   final ResourceItem resource;
 
   const ResourceViewer({
-    super.key,
+    Key? key,
     required this.resource,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,7 @@ class ResourceViewer extends StatelessWidget {
 class VideoViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const VideoViewer({super.key, required this.resource});
+  const VideoViewer({Key? key, required this.resource}) : super(key: key);
 
   @override
   State<VideoViewer> createState() => _VideoViewerState();
@@ -105,11 +106,11 @@ class _VideoViewerState extends State<VideoViewer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text('Failed to load video'),
-            const SizedBox(height: 8),
-            Text(widget.resource.path, style: const TextStyle(color: Colors.grey)),
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
+            SizedBox(height: 16),
+            Text('Failed to load video'),
+            SizedBox(height: 8),
+            Text(widget.resource.path, style: TextStyle(color: Colors.grey)),
           ],
         ),
       );
@@ -117,7 +118,7 @@ class _VideoViewerState extends State<VideoViewer> {
 
     // Show loading indicator while initializing
     if (!_isInitialized) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     // Display the video player
@@ -136,7 +137,7 @@ class _VideoViewerState extends State<VideoViewer> {
         // Video controls
         Container(
           color: Colors.black87,
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8),
           child: Row(
             children: [
               // Play/Pause button
@@ -159,7 +160,7 @@ class _VideoViewerState extends State<VideoViewer> {
                 child: VideoProgressIndicator(
                   _controller,
                   allowScrubbing: true,
-                  colors: const VideoProgressColors(
+                  colors: VideoProgressColors(
                     playedColor: Colors.blue,
                     bufferedColor: Colors.grey,
                     backgroundColor: Colors.white24,
@@ -176,23 +177,230 @@ class _VideoViewerState extends State<VideoViewer> {
 
 /// PdfViewer Widget
 /// 
-/// Displays PDF files using Syncfusion PDF viewer
-class PdfViewer extends StatelessWidget {
+/// Displays PDF files using browser's native PDF viewer (iframe)
+/// This is more reliable for web than external packages
+class PdfViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const PdfViewer({super.key, required this.resource});
+  const PdfViewer({Key? key, required this.resource}) : super(key: key);
+
+  @override
+  State<PdfViewer> createState() => _PdfViewerState();
+}
+
+class _PdfViewerState extends State<PdfViewer> {
+  bool _isLoading = true;
+  bool _hasError = false;
+  String? _viewType;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePdfViewer();
+  }
+
+  /// Initialize PDF viewer with iframe
+  Future<void> _initializePdfViewer() async {
+    try {
+      // Get the base URL from the current window location
+      final baseUrl = html.window.location.origin;
+      
+      // Construct full PDF URL
+      String pdfPath = widget.resource.path;
+      String fullPdfUrl;
+      
+      if (pdfPath.startsWith('http')) {
+        // Already a full URL
+        fullPdfUrl = pdfPath;
+      } else {
+        // Relative path - construct full URL
+        if (!pdfPath.startsWith('/')) {
+          pdfPath = '/$pdfPath';
+        }
+        fullPdfUrl = '$baseUrl$pdfPath';
+      }
+      
+      print('Attempting to load PDF from: $fullPdfUrl');
+      
+      // Check if PDF is accessible
+      final response = await http.head(Uri.parse(fullPdfUrl));
+      
+      if (response.statusCode == 200) {
+        // Create unique view type
+        _viewType = 'pdf-${widget.resource.path.hashCode}';
+        
+        // Register iframe factory
+        ui_web.platformViewRegistry.registerViewFactory(
+          _viewType!,
+          (int viewId) {
+            final iframe = html.IFrameElement()
+              ..src = fullPdfUrl
+              ..style.border = 'none'
+              ..style.width = '100%'
+              ..style.height = '100%';
+            return iframe;
+          },
+        );
+        
+        setState(() {
+          _isLoading = false;
+        });
+      } else {
+        print('PDF request returned status: ${response.statusCode}');
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
+      }
+    } catch (e) {
+      print('Error loading PDF: $e');
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SfPdfViewer.network(
-      resource.path,
-      // Show loading indicator while PDF loads
-      onDocumentLoadFailed: (details) {
-        // Show error message if PDF fails to load
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load PDF: ${details.description}')),
-        );
-      },
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading PDF...'),
+          ],
+        ),
+      );
+    }
+
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
+            SizedBox(height: 16),
+            Text(
+              'Failed to load PDF',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              widget.resource.path,
+              style: TextStyle(color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Troubleshooting:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('• Check if the file exists in web/resources/'),
+                  Text('• Verify the path in resources_manifest.txt'),
+                  Text('• Make sure the PDF is not corrupted'),
+                  Text('• Try opening the PDF directly in browser'),
+                ],
+              ),
+            ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isLoading = true;
+                      _hasError = false;
+                    });
+                    _initializePdfViewer();
+                  },
+                  icon: Icon(Icons.refresh),
+                  label: Text('Retry'),
+                ),
+                SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    final baseUrl = html.window.location.origin;
+                    String pdfPath = widget.resource.path;
+                    String fullPdfUrl;
+                    
+                    if (pdfPath.startsWith('http')) {
+                      fullPdfUrl = pdfPath;
+                    } else {
+                      if (!pdfPath.startsWith('/')) {
+                        pdfPath = '/$pdfPath';
+                      }
+                      fullPdfUrl = '$baseUrl$pdfPath';
+                    }
+                    
+                    html.window.open(fullPdfUrl, '_blank');
+                  },
+                  icon: Icon(Icons.open_in_new),
+                  label: Text('Open in New Tab'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Display PDF in iframe
+    return Column(
+      children: [
+        // Info banner
+        Container(
+          padding: EdgeInsets.all(8),
+          color: Colors.blue.shade50,
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.blue),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Use browser controls to zoom and navigate the PDF',
+                  style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  final baseUrl = html.window.location.origin;
+                  String pdfPath = widget.resource.path;
+                  String fullPdfUrl;
+                  
+                  if (pdfPath.startsWith('http')) {
+                    fullPdfUrl = pdfPath;
+                  } else {
+                    if (!pdfPath.startsWith('/')) {
+                      pdfPath = '/$pdfPath';
+                    }
+                    fullPdfUrl = '$baseUrl$pdfPath';
+                  }
+                  
+                  html.window.open(fullPdfUrl, '_blank');
+                },
+                icon: Icon(Icons.open_in_new, size: 16),
+                label: Text('Open in New Tab'),
+              ),
+            ],
+          ),
+        ),
+        // PDF iframe
+        Expanded(
+          child: HtmlElementView(
+            viewType: _viewType!,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -203,7 +411,7 @@ class PdfViewer extends StatelessWidget {
 class MarkdownViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const MarkdownViewer({super.key, required this.resource});
+  const MarkdownViewer({Key? key, required this.resource}) : super(key: key);
 
   @override
   State<MarkdownViewer> createState() => _MarkdownViewerState();
@@ -249,11 +457,11 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -270,9 +478,9 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
       data: _markdownContent,
       selectable: true,
       styleSheet: MarkdownStyleSheet(
-        h1: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-        h2: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        p: const TextStyle(fontSize: 16),
+        h1: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        h2: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        p: TextStyle(fontSize: 16),
       ),
     );
   }
@@ -285,7 +493,7 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
 class MhtmlViewer extends StatefulWidget {
   final ResourceItem resource;
 
-  const MhtmlViewer({super.key, required this.resource});
+  const MhtmlViewer({Key? key, required this.resource}) : super(key: key);
 
   @override
   State<MhtmlViewer> createState() => _MhtmlViewerState();
@@ -330,11 +538,11 @@ class _MhtmlViewerState extends State<MhtmlViewer> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -349,10 +557,10 @@ class _MhtmlViewerState extends State<MhtmlViewer> {
     // For now, display as scrollable text
     // In future iterations, this could render the HTML properly
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Text(
         _content,
-        style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+        style: TextStyle(fontFamily: 'monospace', fontSize: 12),
       ),
     );
   }

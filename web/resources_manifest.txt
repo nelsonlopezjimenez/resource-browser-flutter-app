@@ -21,10 +21,12 @@
 # resources/readme.md
 # resources/webpage.mhtml
 
-resources/what_is_a_browser.mp4
-resources/Web_Graphics_Basics.pdf
-resources/week1.md
-resources/git-lfs-usage.md
-resources/about_READMEs.mhtml
+/resources/what_is_a_browser.mp4
+/resources/Web_Graphics_Basics.pdf
+/resources/week1.md
+/resources/git-lfs-usage.md
+/resources/about_READMEs.mhtml
+/resources/flutter-build-vs-dev.md
+/resources/flutter-hybrid-dev-build.md
 
 # Add your resource paths below:
