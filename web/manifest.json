@@ -1,0 +1,11 @@
+{
+    "name": "Resource Browser",
+    "short_name": "Resources",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "A Flutter web app to browse and view resources.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}

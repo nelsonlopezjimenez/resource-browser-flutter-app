@@ -1,0 +1,3 @@
+# This file ensures the resources folder is tracked in git
+# Your actual resource files (videos, PDFs, etc.) are ignored
+# But this keeps the folder structure in your repository

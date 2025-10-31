@@ -1,0 +1,30 @@
+# Resource Manifest File
+# 
+# This file lists all the resources available in your public folder.
+# Each line should contain the path to a file (relative to the web root).
+# Lines starting with # are comments and will be ignored.
+#
+# Supported file types:
+# - Videos: .mp4, .webm, .ogg
+# - PDFs: .pdf
+# - Markdown: .md, .markdown
+# - MHTML: .mhtml, .mht
+#
+# INSTRUCTIONS:
+# 1. Place your resource files in a folder (e.g., 'resources' or 'assets')
+# 2. List each file path below (one per line)
+# 3. Make sure the paths are correct and accessible from your web server
+#
+# Example entries (uncomment and modify these):
+# resources/sample-video.mp4
+# resources/user-guide.pdf
+# resources/readme.md
+# resources/webpage.mhtml
+
+resources/what_is_a_browser.mp4
+resources/Web_Graphics_Basics.pdf
+resources/week1.md
+resources/git-lfs-usage.md
+resources/about_READMEs.mhtml
+
+# Add your resource paths below:

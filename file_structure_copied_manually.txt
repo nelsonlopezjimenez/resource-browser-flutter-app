@@ -1,0 +1,21 @@
+bash
+
+cd /mnt/user-data/outputs/resource_browser && find . -type f -name "*.dart" -o -name "*.yaml" -o -name "*.md" -o -name "*.txt" -o -name "*.html" -o -name "*.json" | head -30
+Output
+
+./DEVELOPMENT.md
+./PROJECT_SUMMARY.md
+./QUICKSTART.md
+./README.md
+./VISUAL_GUIDE.md
+./analysis_options.yaml
+./lib/main.dart
+./lib/models/resource_item.dart
+./lib/screens/home_screen.dart
+./lib/services/file_scanner.dart
+./lib/widgets/resource_list.dart
+./lib/widgets/resource_viewer.dart
+./pubspec.yaml
+./web/index.html
+./web/manifest.json
+./web/resources_manifest.txt

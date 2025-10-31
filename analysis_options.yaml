@@ -1,0 +1,31 @@
+# Defines the linting rules for the Flutter project
+# These rules help maintain code quality and consistency
+
+include: package:flutter_lints/flutter.yaml
+
+# Additional custom rules
+linter:
+  rules:
+    # Style rules
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    
+    # Best practices
+    avoid_print: false  # Allow print statements for this beginner project
+    prefer_single_quotes: true
+    always_declare_return_types: true
+    
+    # Documentation
+    public_member_api_docs: false  # We're using inline comments instead
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  
+  errors:
+    # Warnings become errors
+    missing_required_param: error
+    missing_return: error
