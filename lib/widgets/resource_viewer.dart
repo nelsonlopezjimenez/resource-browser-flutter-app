@@ -16,10 +16,12 @@ import '../models/resource_item.dart';
 /// - MHTML: Displays as HTML (simplified in this version)
 class ResourceViewer extends StatelessWidget {
   final ResourceItem resource;
+  final Function(String)? onMarkdownContentLoaded;
 
   const ResourceViewer({
     Key? key,
     required this.resource,
+    this.onMarkdownContentLoaded,
   }) : super(key: key);
 
   @override
@@ -31,7 +33,10 @@ class ResourceViewer extends StatelessWidget {
       case 'pdf':
         return PdfViewer(resource: resource);
       case 'markdown':
-        return MarkdownViewer(resource: resource);
+        return MarkdownViewer(
+          resource: resource,
+          onMarkdownContentLoaded: onMarkdownContentLoaded,
+          );
       case 'mhtml':
         return MhtmlViewer(resource: resource);
       default:
@@ -106,11 +111,11 @@ class _VideoViewerState extends State<VideoViewer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red),
-            SizedBox(height: 16),
-            Text('Failed to load video'),
-            SizedBox(height: 8),
-            Text(widget.resource.path, style: TextStyle(color: Colors.grey)),
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text('Failed to load video'),
+            const SizedBox(height: 8),
+            Text(widget.resource.path, style: const TextStyle(color: Colors.grey)),
           ],
         ),
       );
@@ -118,7 +123,7 @@ class _VideoViewerState extends State<VideoViewer> {
 
     // Show loading indicator while initializing
     if (!_isInitialized) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     // Display the video player
@@ -137,7 +142,7 @@ class _VideoViewerState extends State<VideoViewer> {
         // Video controls
         Container(
           color: Colors.black87,
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           child: Row(
             children: [
               // Play/Pause button
@@ -160,7 +165,7 @@ class _VideoViewerState extends State<VideoViewer> {
                 child: VideoProgressIndicator(
                   _controller,
                   allowScrubbing: true,
-                  colors: VideoProgressColors(
+                  colors: const VideoProgressColors(
                     playedColor: Colors.blue,
                     bufferedColor: Colors.grey,
                     backgroundColor: Colors.white24,
@@ -264,7 +269,7 @@ class _PdfViewerState extends State<PdfViewer> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -281,25 +286,25 @@ class _PdfViewerState extends State<PdfViewer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red),
-            SizedBox(height: 16),
-            Text(
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text(
               'Failed to load PDF',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               widget.resource.path,
               style: TextStyle(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Troubleshooting:',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
-            Padding(
+            const SizedBox(height: 8),
+            const Padding(
               padding: EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +316,7 @@ class _PdfViewerState extends State<PdfViewer> {
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -323,10 +328,10 @@ class _PdfViewerState extends State<PdfViewer> {
                     });
                     _initializePdfViewer();
                   },
-                  icon: Icon(Icons.refresh),
-                  label: Text('Retry'),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton.icon(
                   onPressed: () {
                     final baseUrl = html.window.location.origin;
@@ -344,8 +349,8 @@ class _PdfViewerState extends State<PdfViewer> {
                     
                     html.window.open(fullPdfUrl, '_blank');
                   },
-                  icon: Icon(Icons.open_in_new),
-                  label: Text('Open in New Tab'),
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Open in New Tab'),
                 ),
               ],
             ),
@@ -359,12 +364,12 @@ class _PdfViewerState extends State<PdfViewer> {
       children: [
         // Info banner
         Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           color: Colors.blue.shade50,
           child: Row(
             children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.blue),
-              SizedBox(width: 8),
+              const Icon(Icons.info_outline, size: 16, color: Colors.blue),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Use browser controls to zoom and navigate the PDF',
@@ -388,8 +393,8 @@ class _PdfViewerState extends State<PdfViewer> {
                   
                   html.window.open(fullPdfUrl, '_blank');
                 },
-                icon: Icon(Icons.open_in_new, size: 16),
-                label: Text('Open in New Tab'),
+                icon: const Icon(Icons.open_in_new, size: 16),
+                label: const Text('Open in New Tab'),
               ),
             ],
           ),
@@ -410,8 +415,13 @@ class _PdfViewerState extends State<PdfViewer> {
 /// Displays markdown files with proper formatting
 class MarkdownViewer extends StatefulWidget {
   final ResourceItem resource;
+  final Function(String)? onContentLoaded;
 
-  const MarkdownViewer({Key? key, required this.resource}) : super(key: key);
+  const MarkdownViewer({
+    Key? key, 
+    required this.resource,
+    this.onContentLoaded,
+    }) : super(key: key);
 
   @override
   State<MarkdownViewer> createState() => _MarkdownViewerState();
@@ -439,6 +449,11 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
           _markdownContent = response.body;
           _isLoading = false;
         });
+
+        // Call the callback with the content for TOC extraction
+        if (widget.onContentLoaded != null) {
+          widget.onContentLoaded!(_markdownContent);
+        }
       } else {
         setState(() {
           _hasError = true;
@@ -457,11 +472,11 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -478,9 +493,9 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
       data: _markdownContent,
       selectable: true,
       styleSheet: MarkdownStyleSheet(
-        h1: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-        h2: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        p: TextStyle(fontSize: 16),
+        h1: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        h2: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        p: const TextStyle(fontSize: 16),
       ),
     );
   }
@@ -538,11 +553,11 @@ class _MhtmlViewerState extends State<MhtmlViewer> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
