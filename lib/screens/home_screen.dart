@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onResourceSelected(ResourceItem resource) {
     setState(() {
       _selectedResource = resource;
-      _tocHeadings = [] // Clear TOC when swithching resources
+      _tocHeadings = []; // Clear TOC when swithching resources
     });
 
     // If it's a markdown file, we'll extract headings

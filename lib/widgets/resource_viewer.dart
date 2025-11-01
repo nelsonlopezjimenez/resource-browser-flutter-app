@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
@@ -19,10 +19,10 @@ class ResourceViewer extends StatelessWidget {
   final Function(String)? onMarkdownContentLoaded;
 
   const ResourceViewer({
-    Key? key,
+    super.key,
     required this.resource,
     this.onMarkdownContentLoaded,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -418,10 +418,10 @@ class MarkdownViewer extends StatefulWidget {
   final Function(String)? onContentLoaded;
 
   const MarkdownViewer({
-    Key? key, 
+    super.key, 
     required this.resource,
-    this.onContentLoaded,
-    }) : super(key: key);
+    this.onContentLoaded, Function(String p1)? onMarkdownContentLoaded,
+    });
 
   @override
   State<MarkdownViewer> createState() => _MarkdownViewerState();
