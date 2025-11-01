@@ -35,6 +35,8 @@ resource_browser/
 └── pubspec.yaml                     # Dependencies and configuration
 ```
 
+## 11.1.2025
+![flutter v1.0.0](<flutter-resource- browser-v1.0.0.png>)
 ## Getting Started
 
 ### Prerequisites
