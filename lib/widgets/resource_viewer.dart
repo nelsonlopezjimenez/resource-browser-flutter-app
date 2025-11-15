@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:html' as html;
 import 'dart:ui_web' as ui_web;
 import '../models/resource_item.dart';
+import 'package:markdown/markdown.dart' as md;
 
 /// ResourceViewer Widget
 /// 
@@ -19,11 +20,13 @@ import '../models/resource_item.dart';
 class ResourceViewer extends StatelessWidget {
   final ResourceItem resource;
   final Function(String)? onMarkdownContentLoaded;
+  final GlobalKey<_MarkdownViewerState>? markdownViewerKey;
 
   const ResourceViewer({
     super.key,
     required this.resource,
     this.onMarkdownContentLoaded,
+    this.markdownViewerKey,
   });
 
   @override
@@ -36,6 +39,7 @@ class ResourceViewer extends StatelessWidget {
         return PdfViewer(resource: resource);
       case 'markdown':
         return MarkdownViewer(
+          key: markdownViewerKey,
           resource: resource,
           onMarkdownContentLoaded: onMarkdownContentLoaded,
           );
@@ -441,6 +445,21 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
     _loadMarkdown();
   }
 
+   // ADD THIS METHOD - handles when resource changes
+  @override
+  void didUpdateWidget(MarkdownViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the resource path changed, reload the markdown
+    if (oldWidget.resource.path != widget.resource.path) {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+        _markdownContent = '';
+      });
+      _loadMarkdown();
+    }
+  }
+
   /// Load the markdown file content
   /// /// Load the markdown file content with proper UTF-8 encoding
   Future<void> _loadMarkdown() async {
@@ -495,9 +514,25 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
     }
 
     // Display the markdown content with styling  and emoji support
-   return Markdown(
+  //  return SingleChildScrollView(
+    return Markdown(
+
       data: _markdownContent,
       selectable: true,
+      // Enable anchor link navigation
+        onTapLink: (String text, String? href, String title) {
+          if (href != null) {
+            if (href.startsWith('#')) {
+              // Internal anchor link - flutter_markdown_plus handles this automatically
+              print('Tapped internal anchor: $href');
+            } else {
+              // External link - open in browser
+              print('External link: $href');
+              // You could use url_launcher here if needed
+            }
+          }
+        },
+
       styleSheet: MarkdownStyleSheet(
         // Headers with emoji font support
         h1: const TextStyle(
@@ -547,6 +582,11 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
             'Segoe UI Emoji',
             'Noto Color Emoji',
           ],
+        ),
+        // Link styling - make them more visible
+        a: const TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
         ),
         // Code blocks
         code: TextStyle(

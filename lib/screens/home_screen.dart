@@ -39,7 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
 
   // Table of contents for markdown files
-  List<String> _tocHeadings = [];
+  List<TocItem> _tocItems = [];
+
+  //  // Scroll controller for markdown content
+  // final ScrollController _contentScrollController = ScrollController();
+
+    // Key to access the MarkdownViewer state
+  final GlobalKey<_MarkdownViewerState> _markdownViewerKey = GlobalKey();
 
   @override
   void initState() {
@@ -47,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Load resources when the screen first appears
     _loadResources();
   }
+
 
   /// Load (or reload) resources from the public folder
   Future<void> _loadResources() async {
@@ -143,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onResourceSelected(ResourceItem resource) {
     setState(() {
       _selectedResource = resource;
-      _tocHeadings = []; // Clear TOC when swithching resources
+      _tocItems = []; // Clear TOC when swithching resources
     });
 
     // If it's a markdown file, we'll extract headings
@@ -153,26 +160,60 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Callback to receive markdown content aqnd extract TOC
   void _onMarkdownContentLoaded(String content) {
     setState( () {
-      _tocHeadings = _extractHeadings(content);
+      _tocItems = _extractHeadings(content);
     });
   }
 
   /// Extract Headings from markdown content
-  List<String> _extractHeadings(String content) {
-    final headings = <String>[];
+  List<TocItem> _extractHeadings(String content) {
+    final tocItems = <TocItem>[];
     final lines = content.split('\n');
 
     for (var line in lines) {
       final trimmed = line.trim();
       // Match headings (#, ##, ####)
       if (trimmed.startsWith('#')) {
-        headings.add(trimmed);
+        final level = _getHeadingLevel(trimmed);
+        final text = trimmed.replaceAll('#', '').trim();
+
+              // Create anchor ID from heading text
+        final anchorId = text
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^\w\s-]'), '')
+            .replaceAll(RegExp(r'\s+'), '-');
+        
+        tocItems.add(TocItem(
+          text: text,
+          level: level,
+          anchorId: anchorId,
+        ));      
       }
     }
 
-    return headings;
+    return tocItems;
   }
 
+
+  /// Get heading level from markdown heading
+  int _getHeadingLevel(String heading) {
+    int level = 0;
+    for (var char in heading.characters) {
+      if (char == '#') {
+        level++;
+      } else {
+        break;
+      }
+    }
+    return level;
+  }
+
+  /// Scroll to a specific heading (TOC click handler)
+  void _scrollToHeading(String anchorId) {
+    // Note: This is a simplified version
+    // flutter_markdown_plus should handle anchor navigation automatically
+    // If it doesn't work, you may need a custom implementation
+    print('Scrolling to: $anchorId');
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -368,6 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // Resource viewer
         Expanded(
           child: ResourceViewer(
+            key: ValueKey(_selectedResource!.path), // FIX: Force rebuild on resource change
             resource: _selectedResource!,
             onMarkdownContentLoaded: _onMarkdownContentLoaded,
             ),
@@ -574,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
         
         // TOC Items
         Expanded(
-          child: _tocHeadings.isEmpty
+          child: _tocItems.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
@@ -586,29 +628,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: _tocHeadings.length,
+                  itemCount: _tocItems.length,
                   itemBuilder: (context, index) {
-                    final heading = _tocHeadings[index];
-                    final level = _getHeadingLevel(heading);
-                    final text = heading.replaceAll('#', '').trim();
+                    // final heading = _tocHeadings[index];
+                    // final level = _getHeadingLevel(heading);
+                    // final text = heading.replaceAll('#', '').trim();
+                    final item = _tocItems[index];
                     
                     return InkWell(
                       onTap: () {
                         // TODO: Scroll to heading in content (future enhancement)
+                         _scrollToHeading(item.anchorId);
                       },
                       child: Container(
                         padding: EdgeInsets.only(
-                          left: 16 + (level - 1) * 12.0,
+                          left: 16 + (item.level - 1) * 12.0,
                           right: 16,
                           top: 6,
                           bottom: 6,
                         ),
                         child: Text(
-                          text,
+                          item.text,
                           style: TextStyle(
-                            fontSize: level == 1 ? 13 : 12,
-                            fontWeight: level == 1 ? FontWeight.w600 : FontWeight.normal,
-                            color: level == 1 ? Colors.black87 : Colors.black54,
+                            fontSize: item.level == 1 ? 13 : 12,
+                            fontWeight: item.level == 1 ? FontWeight.w600 : FontWeight.normal,
+                            color: item.level == 1 ? Colors.black87 : Colors.black54,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -623,15 +667,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Get heading level from markdown heading
-  int _getHeadingLevel(String heading) {
-    int level = 0;
-    for (var char in heading.characters) {
-      if (char == '#') {
-        level++;
-      } else {
-        break;
-      }
-    }
-    return level;
-  }
+  // int _getHeadingLevel(String heading) {
+  //   int level = 0;
+  //   for (var char in heading.characters) {
+  //     if (char == '#') {
+  //       level++;
+  //     } else {
+  //       break;
+  //     }
+  //   }
+  //   return level;
+  // }
+}
+
+/// Model class for TOC items
+class TocItem {
+  final String text;
+  final int level;
+  final String anchorId;
+
+  TocItem({
+    required this.text,
+    required this.level,
+    required this.anchorId,
+  });
 }
