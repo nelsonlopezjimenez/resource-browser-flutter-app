@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import '../models/resource_item.dart';
 
@@ -42,8 +44,12 @@ class FileScanner {
 
       // Check if the request was successful (status code 200)
       if (response.statusCode == 200) {
+        // CHANGED: Use utf8.decode instead of response.body
+        // This ensures proper handling of UTF-8 characters including emoji
+        final content = utf8.decode(response.bodyBytes, allowMalformed: true);
+
         // Split the file content into lines
-        final lines = response.body.split('\n');
+        final lines = content.split('\n');
         
         // Convert each line into a ResourceItem
         final resources = <ResourceItem>[];
@@ -77,6 +83,47 @@ class FileScanner {
       // If there's any error (network error, etc.), print it and return empty list
       print('Error scanning resources: $e');
       return [];
+    }
+  }
+
+  /// Load a markdown file with proper UTF-8 encoding
+  /// 
+  /// This method specifically handles loading markdown files and ensures
+  /// that special characters and emoji are properly displayed.
+  Future<String> loadMarkdownFile(String filePath) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/$filePath'),
+      );
+
+      if (response.statusCode == 200) {
+        // IMPORTANT: Decode as UTF-8 to preserve emoji and special characters
+        return utf8.decode(response.bodyBytes, allowMalformed: true);
+      } else {
+        throw Exception('Failed to load file: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error loading markdown file: $e');
+    }
+  }
+
+  /// Load any text-based file with UTF-8 encoding
+  /// 
+  /// Use this for MHTML or any other text-based files
+  Future<String> loadTextFile(String filePath) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/$filePath'),
+      );
+
+      if (response.statusCode == 200) {
+        // Decode as UTF-8
+        return utf8.decode(response.bodyBytes, allowMalformed: true);
+      } else {
+        throw Exception('Failed to load file: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error loading text file: $e');
     }
   }
 

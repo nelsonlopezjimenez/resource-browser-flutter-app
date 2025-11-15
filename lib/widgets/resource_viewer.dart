@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:video_player/video_player.dart';
@@ -415,12 +417,12 @@ class _PdfViewerState extends State<PdfViewer> {
 /// Displays markdown files with proper formatting
 class MarkdownViewer extends StatefulWidget {
   final ResourceItem resource;
-  final Function(String)? onContentLoaded;
+  final Function(String)? onMarkdownContentLoaded;
 
   const MarkdownViewer({
     super.key, 
     required this.resource,
-    this.onContentLoaded, Function(String p1)? onMarkdownContentLoaded,
+    this.onMarkdownContentLoaded, 
     });
 
   @override
@@ -440,19 +442,23 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
   }
 
   /// Load the markdown file content
+  /// /// Load the markdown file content with proper UTF-8 encoding
   Future<void> _loadMarkdown() async {
     try {
       final response = await http.get(Uri.parse(widget.resource.path));
       
       if (response.statusCode == 200) {
+         // CRITICAL FIX: Use utf8.decode to preserve emoji and special characters
+        final content = utf8.decode(response.bodyBytes, allowMalformed: true);
+
         setState(() {
-          _markdownContent = response.body;
+          _markdownContent = content;
           _isLoading = false;
         });
 
         // Call the callback with the content for TOC extraction
-        if (widget.onContentLoaded != null) {
-          widget.onContentLoaded!(_markdownContent);
+        if (widget.onMarkdownContentLoaded  != null) {
+          widget.onMarkdownContentLoaded !(_markdownContent);
         }
       } else {
         setState(() {
@@ -488,14 +494,73 @@ class _MarkdownViewerState extends State<MarkdownViewer> {
       );
     }
 
-    // Display the markdown content with styling
-    return Markdown(
+    // Display the markdown content with styling  and emoji support
+   return Markdown(
       data: _markdownContent,
       selectable: true,
       styleSheet: MarkdownStyleSheet(
-        h1: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-        h2: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        p: const TextStyle(fontSize: 16),
+        // Headers with emoji font support
+        h1: const TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          fontFamilyFallback: [
+            'Apple Color Emoji',
+            'Segoe UI Emoji',
+            'Noto Color Emoji',
+          ],
+        ),
+        h2: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          fontFamilyFallback: [
+            'Apple Color Emoji',
+            'Segoe UI Emoji',
+            'Noto Color Emoji',
+          ],
+        ),
+        h3: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          fontFamilyFallback: [
+            'Apple Color Emoji',
+            'Segoe UI Emoji',
+            'Noto Color Emoji',
+          ],
+        ),
+        // Paragraph with emoji support
+        p: const TextStyle(
+          fontSize: 16,
+          height: 1.5,
+          fontFamilyFallback: [
+            'Apple Color Emoji',
+            'Segoe UI Emoji',
+            'Noto Color Emoji',
+            'Segoe UI Symbol',
+            'Android Emoji',
+          ],
+        ),
+        // List items with emoji support
+        listBullet: const TextStyle(
+          fontSize: 16,
+          fontFamilyFallback: [
+            'Apple Color Emoji',
+            'Segoe UI Emoji',
+            'Noto Color Emoji',
+          ],
+        ),
+        // Code blocks
+        code: TextStyle(
+          fontSize: 14,
+          fontFamily: 'monospace',
+          backgroundColor: Colors.grey[200],
+          color: Colors.red[700],
+        ),
+        codeblockDecoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        codeblockPadding: const EdgeInsets.all(8),
       ),
     );
   }
@@ -572,10 +637,10 @@ class _MhtmlViewerState extends State<MhtmlViewer> {
     // For now, display as scrollable text
     // In future iterations, this could render the HTML properly
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Text(
         _content,
-        style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+        style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
       ),
     );
   }

@@ -28,5 +28,18 @@
 /resources/about_READMEs.mhtml
 /resources/flutter-build-vs-dev.md
 /resources/flutter-hybrid-dev-build.md
+/resources/go-lang-lodash-like.md
+/resources/go-lang-lodash-like-full-app.md
 
 # Add your resource paths below:
+/resources/CHECKLIST.md
+/resources/CONTRIBUTING.md
+/resources/DEVELOPMENT.md
+/resources/flutter-express-no-cors-no-cache.md
+/resources/GIT_GUIDE.md
+/resources/INDEX.md
+/resources/PROJECT_SUMMARY.md
+/resources/QUICKSTART.md
+/resources/README.md
+/resources/VISUAL_GUIDE.md
+/resources/docker-install-claude.md
